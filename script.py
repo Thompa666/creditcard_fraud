@@ -43,7 +43,7 @@ if __name__ == '__main__':
 		X = data_sample.values
 	
 		#Scale input data
-		X = preprocessing.scale(X)
+		#X = preprocessing.scale(X)
 		#Select val size
 		val_size = 0.3
 		random_st = 7
@@ -76,7 +76,7 @@ if __name__ == '__main__':
 	X = data.values
 	
 	#Scale input data
-	X = preprocessing.scale(X)
+	#X = preprocessing.scale(X)
 	#Select val size
 	val_size = 0.3
 	random_st = 7
@@ -96,9 +96,6 @@ if __name__ == '__main__':
 	conf_complete = confusion_matrix(Y, y)
 	print "Confusion matrix for undersampled set (Last iteration):"
 	print conf_complete
-	
-	
-	
 	
 	
 	#p_0 = 0
