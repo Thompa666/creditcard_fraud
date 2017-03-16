@@ -6,6 +6,7 @@ import random
 from sklearn.linear_model import LogisticRegression
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, roc_curve, recall_score
 
 def simple_graphing(data):
 	positive = data.loc[data['Class'] == 1].values
@@ -32,7 +33,7 @@ if __name__ == '__main__':
 	#Uncomment to see simple graphs of the given data	
 	#simple_graphing(data)		
 	
-	prob_weights = []
+	recall_matrix = []
 	for i in xrange(1, 100):
 		data_sample = new_sample(data)
 	
@@ -44,42 +45,98 @@ if __name__ == '__main__':
 		#Scale input data
 		X = preprocessing.scale(X)
 		#Select val size
-		val_size = 0.1
+		val_size = 0.3
 		random_st = 7
 	
 		#Split Train and validation sets
 		X_train, X_val, y_train, y_val = train_test_split(X, Y, test_size = val_size,
 														  random_state = random_st)
 		#Using logistic regression
-		clf = LogisticRegression()
+		clf = LogisticRegression(C = 0.1)
 		clf.fit(X_train, y_train)
-		print "Accuracy on Train set %d" %i, round(clf.score(X_train, y_train), 2)
-		print "Accuracy on Val set %d" %i, round(clf.score(X_val, y_val), 2)
-		prob_tmp = clf.predict_proba(X_train)
-		prob_weights.append(prob_tmp)
+		y_train_pred = clf.predict(X_train)
+		y_val_pred = clf.predict(X_val)
+		y = clf.predict(X)
+		print "Recall on Train set %d" %i, round(recall_score(y_train, y_train_pred), 2)
+		print "Recall on Val set %d" %i, round(recall_score(y_val, y_val_pred), 2)
+		recall_tmp = round(recall_score(Y, y), 2)
+		print "Recall on X %d" %i, recall_tmp
+		recall_matrix.append(recall_tmp)
 		
-			
-	p_0 = 0
-	p_1 = 0
-	p_final = []
-	#print len(prob_weights)
-	iter = len(prob_weights[0])
-	for j in xrange(0, iter):
-		for prediction in xrange(0, len(prob_weights)):
-			tmp_0 = prob_weights[prediction][j][0]
-			p_0 = tmp_0 + p_0
-			tmp_1 = prob_weights[prediction][j][1]
-			p_1 = tmp_1 + p_1
-			
-			if (prediction == (len(prob_weights) - 1)):
-				pf_0 = p_0/len(prob_weights)
-				pf_1 = p_1/len(prob_weights)
-				p_final.append([pf_0, pf_1])
-				
-				p_0 = 0
-				p_1 = 0
+	avg_recall = sum(recall_matrix)/len(recall_matrix)
+	print "Average recall on undersampled set:", avg_recall
 	
-	print p_final
+	conf = confusion_matrix(Y, y)
+	print "Confusion matrix for undersampled set (Last iteration):"
+	print conf
+	
+	print "Predicitng on the complete set using the model" 
+	Y = data['Class'].values
+	data= data.drop('Class', axis = 1)
+	X = data.values
+	
+	#Scale input data
+	X = preprocessing.scale(X)
+	#Select val size
+	val_size = 0.3
+	random_st = 7
+	
+	#Split Train and validation sets
+	X_train, X_val, y_train, y_val = train_test_split(X, Y, test_size = val_size,
+													  random_state = random_st)
+		
+	y_train_pred = clf.predict(X_train)
+	y_val_pred = clf.predict(X_val)
+	y = clf.predict(X)
+	
+	print "Recall on Complete Train set" , round(recall_score(y_train, y_train_pred), 2)
+	print "Recall on Complete Val set" , round(recall_score(y_val, y_val_pred), 2)
+	print "Recall on Complete X", round(recall_score(Y, y), 2)
+	
+	conf_complete = confusion_matrix(Y, y)
+	print "Confusion matrix for undersampled set (Last iteration):"
+	print conf_complete
+	
+	
+	
+	
+	
+	#p_0 = 0
+	#p_1 = 0
+	#p_final = []
+	
+	#iter = len(prob_weights[0])
+	#for j in xrange(0, iter):
+	#	for prediction in xrange(0, len(prob_weights)):
+	#		tmp_0 = prob_weights[prediction][j][0]
+	#		p_0 = tmp_0 + p_0
+	#		tmp_1 = prob_weights[prediction][j][1]
+	#		p_1 = tmp_1 + p_1
+	#		
+	#		if (prediction == (len(prob_weights) - 1)):
+	#			pf_0 = p_0/len(prob_weights)
+	#			pf_1 = p_1/len(prob_weights)
+	#			p_final.append([pf_0, pf_1])
+				
+	#			p_0 = 0
+	#			p_1 = 0
+	
+	#class_0, class_1 = [], []
+	#for prob in p_final:
+	#	class_0.append(prob[0])
+	#	class_1.append(prob[1])
+		
+	#p_final = pd.DataFrame({'class_0': class_0, 'class_1': class_1})
+	#print 'Aggregated final prediction matrix:'
+	#thrs = 0.5
+	#print 'Threshold:', thrs 	
+	#p_final['prediction'] = np.where((p_final['class_1'] > thrs), 1, 0)
+	#print p_final
+	
+
+	
+	
+	
 	
 	
 	
